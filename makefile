@@ -1,17 +1,21 @@
 #GCCPARAMS = -m32 -fno-use-cxa-ateix -nostdlib -no-builtin 0fno-exceptions -fno-leading
-GPPPARAMS = -m32
-ASPARAMS = --32
-LDPARAMS = -melf_i386
+ASPARAMS = --64
+# Compilation parameters for 64-bit AMD
+GPPPARAMS = -m64 -fno-use-cxa-atexit -nostdlib -fno-exceptions
+
+# Linking parameters for 64-bit AMD
+LDPARAMS = -melf_x86_64
 
 objects = loader.o kernel.o
 
 %.o: %.cpp
-		g++ $(GPPPARMAS) -o $@ -c $<
+	g++ $(GPPPARAMS) -o $@ -c $<
+
 %.o: %.s
-		as $(ASPARAMS) -o $@ $<
+	as --64 -o $@ $<
 
 my_kernel.bin: linker.ld $(objects)
 	ld $(LDPARAMS) -T $< -o $@ $(objects)
 
 install: my_kernel.bin
-		sudo cp $< /boot/my_kernel.bin
+	sudo cp $< /boot/my_kernel.bin
