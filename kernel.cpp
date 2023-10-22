@@ -2,11 +2,14 @@
 // Created by kamil on 21.10.23.
 //
 
-void printf(char *str) {
-    static unsigned short* VideoMemory = (unsigned short*)0xb8000;
+// kernel.cpp
 
-    for (int i = 0; str[i] != '\0'; ++i)
+extern "C" void print(const char* str) {
+    volatile unsigned short* VideoMemory = (unsigned short*)0xB8000;
+
+    for (int i = 0; str[i] != '\0'; ++i) {
         VideoMemory[i] = (VideoMemory[i] & 0xFF00) | str[i];
+    }
 }
 
 typedef void (*constructor)();
@@ -20,8 +23,11 @@ extern "C" void CallConstructors() {
         (*i)();
 }
 
-extern "C" void KernelMain(const void* multiboot_structure, unsigned int) {
-    printf("Hello World!");
-    while (1)
-        ;
+extern "C" void KernelMain() {
+    const char* hello = "Hello, World!";
+    print(hello);
+
+    while (1) {
+        // Infinite loop to keep the kernel running
+    }
 }

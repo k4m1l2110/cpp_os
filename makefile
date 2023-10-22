@@ -1,21 +1,39 @@
-#GCCPARAMS = -m32 -fno-use-cxa-ateix -nostdlib -no-builtin 0fno-exceptions -fno-leading
-ASPARAMS = --64
-# Compilation parameters for 64-bit AMD
-GPPPARAMS = -m64 -fno-use-cxa-atexit -nostdlib -fno-exceptions
+# Makefile for building a 64-bit kernel
 
-# Linking parameters for 64-bit AMD
-LDPARAMS = -melf_x86_64
+# Compiler and linker settings
+CC = gcc
+AS = as
+LD = ld
+CFLAGS = -m32 -c
+LDFLAGS = -melf_i386
 
-objects = loader.o kernel.o
+# Source files
+SRCS = kernel.cpp loader.s
+OBJS = kernel.o loader.o
+
+# Output files
+OUTPUT_DIR = iso/boot
+KERNEL = mykernel.bin
+ISO_IMAGE = mykernel.iso
+
+all: $(ISO_IMAGE)
+
+$(ISO_IMAGE): $(KERNEL)
+	mkdir -p iso/boot/grub
+	cp $(KERNEL) $(OUTPUT_DIR)/$(KERNEL)
+	cp grub.cfg iso/boot/grub/grub.cfg
+	grub-mkrescue --output=$(ISO_IMAGE) iso
+
+$(KERNEL): $(OBJS)
+	ld $(LDFLAGS) -o $(KERNEL) $(OBJS) -T linker.ld
 
 %.o: %.cpp
-	g++ $(GPPPARAMS) -o $@ -c $<
+	$(CC) $(CFLAGS) $< -o $@
 
-%.o: %.s
-	as --64 -o $@ $<
+loader.o: loader.s
+	as --32 -o $@ $<
 
-my_kernel.bin: linker.ld $(objects)
-	ld $(LDPARAMS) -T $< -o $@ $(objects)
+clean:
+	rm -f $(OBJS) $(KERNEL) $(ISO_IMAGE)
 
-install: my_kernel.bin
-	sudo cp $< /boot/my_kernel.bin
+.PHONY: clean
