@@ -1,15 +1,12 @@
-# Makefile for building a 64-bit kernel
-
 # Compiler and linker settings
 CC = gcc
 AS = as
 LD = ld
-CFLAGS = -m32 -c
+
+CFLAGS = -m32 -c -fno-exceptions -fno-rtti
 LDFLAGS = -melf_i386
 
-# Source files
-SRCS = kernel.cpp loader.s
-OBJS = kernel.o loader.o
+OBJS = kernel.o loader.o gdt.o port.o interrupts.o interruptstubs.o
 
 # Output files
 OUTPUT_DIR = iso/boot
@@ -30,7 +27,7 @@ $(KERNEL): $(OBJS)
 %.o: %.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
-loader.o: loader.s
+%.o: %.s
 	as --32 -o $@ $<
 
 clean:
