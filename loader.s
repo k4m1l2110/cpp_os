@@ -7,7 +7,6 @@
     .long FLAGS
     .long CHECKSUM
 
-
 .section .text
 .extern kernelMain
 .extern callConstructors
@@ -20,7 +19,6 @@ loader:
     push %eax
     push %ebx
     call KernelMain
-
 
 _stop:
     cli
