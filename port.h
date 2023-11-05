@@ -7,42 +7,104 @@
 
 #include "types.h"
 
-class Port {
+class port
+{
 protected:
-    uint16_t _port_number;
-    Port(uint16_t _port_nr):_port_number(_port_nr) { ; }
-    ~Port() { ; }
+    port(uint16_t portnumber);
+    // FIXME: Must be virtual (currently isnt because the kernel has no memory management yet)
+    ~port();
+    uint16_t portnumber;
 };
 
-class Port8_t:public Port{
+
+class port8_t : public port
+{
 public:
-    Port8_t(uint16_t _port_nr): Port(_port_nr) { ; }
-    ~Port8_t(){;}
-    void Write(uint8_t data);
-    uint8_t Read();
+    port8_t(uint16_t portnumber);
+    ~port8_t();
+
+    virtual uint8_t Read();
+    virtual void Write(uint8_t data);
+
+protected:
+    static inline uint8_t Read8(uint16_t _port)
+    {
+        uint8_t result;
+        __asm__ volatile("inb %1, %0" : "=a" (result) : "Nd" (_port));
+        return result;
+    }
+
+    static inline void Write8(uint16_t _port, uint8_t _data)
+    {
+        __asm__ volatile("outb %0, %1" : : "a" (_data), "Nd" (_port));
+    }
 };
 
-class Port8_t_slow:public Port8_t{
+
+
+class port8_t_slow : public port8_t
+{
 public:
-    Port8_t_slow(uint16_t _port_nr): Port8_t(_port_nr) { ; }
-    ~Port8_t_slow(){;}
-    void Write(uint8_t data);
+    port8_t_slow(uint16_t portnumber);
+    ~port8_t_slow();
+
+    virtual void Write(uint8_t data);
+protected:
+    static inline void Write8Slow(uint16_t _port, uint8_t _data)
+    {
+        __asm__ volatile("outb %0, %1\njmp 1f\n1: jmp 1f\n1:" : : "a" (_data), "Nd" (_port));
+    }
+
 };
 
-class Port16_t:public Port{
+
+
+class port16_t : public port
+{
 public:
-    Port16_t(uint16_t _port_nr): Port(_port_nr) { ; }
-    ~Port16_t(){;}
-    void Write(uint16_t data);
-    uint16_t Read();
+    port16_t(uint16_t portnumber);
+    ~port16_t();
+
+    virtual uint16_t Read();
+    virtual void Write(uint16_t data);
+
+protected:
+    static inline uint16_t Read16(uint16_t _port)
+    {
+        uint16_t result;
+        __asm__ volatile("inw %1, %0" : "=a" (result) : "Nd" (_port));
+        return result;
+    }
+
+    static inline void Write16(uint16_t _port, uint16_t _data)
+    {
+        __asm__ volatile("outw %0, %1" : : "a" (_data), "Nd" (_port));
+    }
 };
 
-class Port32_t:public Port{
+
+
+class port32_t : public port
+{
 public:
-    Port32_t(uint16_t _port_nr): Port(_port_nr) { ; }
-    ~Port32_t(){;}
-    void Write(uint32_t data);
-    uint32_t Read();
+    port32_t(uint16_t portnumber);
+    ~port32_t();
+
+    virtual uint32_t Read();
+    virtual void Write(uint32_t data);
+
+protected:
+    static inline uint32_t Read32(uint16_t _port)
+    {
+        uint32_t result;
+        __asm__ volatile("inl %1, %0" : "=a" (result) : "Nd" (_port));
+        return result;
+    }
+
+    static inline void Write32(uint16_t _port, uint32_t _data)
+    {
+        __asm__ volatile("outl %0, %1" : : "a"(_data), "Nd" (_port));
+    }
 };
 
 #endif

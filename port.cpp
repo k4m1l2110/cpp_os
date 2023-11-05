@@ -4,36 +4,95 @@
 
 #include "port.h"
 
-void Port8_t::Write(uint8_t data){
-    __asm__ volatile("outb %0, %1" : : "a" (data), "Nd" (_port_number));
+port::port(uint16_t portnumber)
+{
+    this->portnumber = portnumber;
 }
 
-uint8_t Port8_t::Read(){
-    uint8_t result;
-    __asm__ volatile("inb %1, %0" : "=a" (result) : "Nd" (_port_number));
-    return result;
+port::~port()
+{
 }
 
-void Port8_t_slow::Write(uint8_t data){
-    __asm__ volatile("outb %0, %1\njmp 1f\n1: jmp 1f\n1:" : : "a" (data), "Nd" (_port_number));
+
+port8_t::port8_t(uint16_t portnumber)
+        : port(portnumber)
+{
 }
 
-void Port16_t::Write(uint16_t data){
-    __asm__ volatile("outw %0, %1" : : "a" (data), "Nd" (_port_number));
+port8_t::~port8_t()
+{
 }
 
-uint16_t Port16_t::Read(){
-    uint16_t result;
-    __asm__ volatile("inw %1, %0" : "=a" (result) : "Nd" (_port_number));
-    return result;
+void port8_t::Write(uint8_t data)
+{
+    Write8(portnumber, data);
 }
 
-void Port32_t::Write(uint32_t data){
-    __asm__ volatile("outl %0, %1" : : "a" (data), "Nd" (_port_number));
+uint8_t port8_t::Read()
+{
+    return Read8(portnumber);
 }
 
-uint32_t Port32_t::Read(){
-    uint32_t result;
-    __asm__ volatile("inl %1, %0" : "=a" (result) : "Nd" (_port_number));
-    return result;
+
+
+
+
+port8_t_slow::port8_t_slow(uint16_t portnumber)
+        : port8_t(portnumber)
+{
+}
+
+port8_t_slow::~port8_t_slow()
+{
+}
+
+void port8_t_slow::Write(uint8_t data)
+{
+    Write8Slow(portnumber, data);
+}
+
+
+
+
+
+port16_t::port16_t(uint16_t portnumber)
+        : port(portnumber)
+{
+}
+
+port16_t::~port16_t()
+{
+}
+
+void port16_t::Write(uint16_t data)
+{
+    Write16(portnumber, data);
+}
+
+uint16_t port16_t::Read()
+{
+    return Read16(portnumber);
+}
+
+
+
+
+
+port32_t::port32_t(uint16_t portnumber)
+        : port(portnumber)
+{
+}
+
+port32_t::~port32_t()
+{
+}
+
+void port32_t::Write(uint32_t data)
+{
+    Write32(portnumber, data);
+}
+
+uint32_t port32_t::Read()
+{
+    return Read32(portnumber);
 }
