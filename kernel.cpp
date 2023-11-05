@@ -5,8 +5,15 @@
 #include "gdt.h"
 #include "port.h"
 #include "interrupts.h"
+#include "keyboard.h"
 
-
+extern "C" void __stack_chk_fail_local() {
+    // Add your custom error handling here
+    // For example, you can print an error message and halt the system.
+    //Print("Stack buffer overflow detected\n");
+    //while (1) {}  // Halt the system
+    ;
+}
 
 void Print(char *str) {
     static uint16_t *VideoMemory = (uint16_t *) 0xb8000;
@@ -49,20 +56,14 @@ extern "C" void CallConstructors() {
         (*i)();
 }
 
-extern "C" void __stack_chk_fail_local() {
-    // Add your custom error handling here
-    // For example, you can print an error message and halt the system.
-    Print("Stack buffer overflow detected\n");
-    //while (1) {}  // Halt the system
-}
-
 extern "C" void KernelMain(const void *multiboot_structure, uint32_t magic) {
     Print("Hello World!\n");
-
     GDT _gdt;
     InterruptManager _interrupts(&_gdt);
+
+    KeyboardDriver keyboard(&_interrupts);
+
     _interrupts.Activate();
-    Print("From my_os");
 
     while (1);
 }
