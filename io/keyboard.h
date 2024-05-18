@@ -5,9 +5,9 @@
 #ifndef CPP_OS_KEYBOARD_H
 #define CPP_OS_KEYBOARD_H
 
-#include "types.h"
-#include "interrupts.h"
-#include "port.h"
+#include "../types.h"
+#include "../interrupts.h"
+#include "../port.h"
 
 class KeyboardDriver : public InterruptHandler {
     port8_t data_port;

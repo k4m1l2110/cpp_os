@@ -39,6 +39,7 @@ InterruptManager::InterruptManager(GDT *gdt)
 
     SetIDT(0x20, code_segment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
     SetIDT(0x21, code_segment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
+    SetIDT(0x2C, code_segment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
 
     pic_master_command.Write(0x11);
     pic_slave_command.Write(0x11);

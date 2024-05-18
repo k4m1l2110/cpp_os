@@ -5,7 +5,8 @@
 #include "gdt.h"
 #include "port.h"
 #include "interrupts.h"
-#include "keyboard.h"
+#include "./io/keyboard.h"
+#include "./io/mouse.h"
 
 extern "C" void __stack_chk_fail_local() {
     // Add your custom error handling here
@@ -62,6 +63,7 @@ extern "C" void KernelMain(const void *multiboot_structure, uint32_t magic) {
     InterruptManager _interrupts(&_gdt);
 
     KeyboardDriver keyboard(&_interrupts);
+    MouseDriver mouse(&_interrupts);
 
     _interrupts.Activate();
 

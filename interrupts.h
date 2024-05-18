@@ -59,6 +59,7 @@ protected:
     static void IgnoreInterruptRequest();
     static void HandleInterruptRequest0x00();
     static void HandleInterruptRequest0x01();
+    static void HandleInterruptRequest0x0C();
 
 public:
     InterruptManager(GDT *gdt);
