@@ -6,7 +6,7 @@ LD = ld
 CFLAGS = -m32 -c -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings
 LDFLAGS = -melf_i386
 
-OBJS = loader.o gdt.o port.o interruptstubs.o interrupts.o ./io/keyboard.o ./io/mouse.o kernel.o
+OBJS = loader.o gdt.o port.o interruptstubs.o interrupts.o ./drivers/io/keyboard.o ./drivers/io/mouse.o ./drivers/io/event_handler.o ./drivers/driver.o kernel.o
 
 # Output files
 OUTPUT_DIR = iso/boot

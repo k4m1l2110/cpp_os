@@ -5,6 +5,7 @@
 #include "interrupts.h"
 
 void Print(char *str);
+void PrintHex(uint8_t key);
 
 InterruptManager *InterruptManager::active_IM = 0;
 InterruptManager::GateDescriptor InterruptManager::IDT[256];
@@ -83,11 +84,8 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptnumber, uint32_t e
     if(handlers[interruptnumber]!= 0)
         esp = handlers[interruptnumber]->HandleInterrupt(esp);
     else if (interruptnumber != 0x20) {
-        char *msg = "Unhandled interrupt 0x00 ";
-        char *hex = "0123456789ABCDEF";
-        msg[22] = hex[(interruptnumber >> 4) & 0x0F];
-        msg[23] = hex[interruptnumber & 0x0F];
-        Print(msg);
+        Print("UNHANDLED INTERRUPT 0x");
+        PrintHex(interruptnumber);
     }
 
     if (0x20 <= interruptnumber && 0x30 > interruptnumber) {

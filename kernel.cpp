@@ -5,8 +5,9 @@
 #include "gdt.h"
 #include "port.h"
 #include "interrupts.h"
-#include "./io/keyboard.h"
-#include "./io/mouse.h"
+#include "./drivers/io/keyboard.h"
+#include "./drivers/io/mouse.h"
+#include "./drivers/driver.h"
 
 extern "C" void __stack_chk_fail_local() {
     // Add your custom error handling here
@@ -46,6 +47,14 @@ void Print(char *str) {
     }
 }
 
+void PrintHex(uint8_t key) {
+    char *res = "00";
+    char *hex = "0123456789ABCDEF";
+    res[0] = hex[(key >> 4) & 0x0F];
+    res[1] = hex[key & 0x0F];
+    Print(res);
+}
+
 typedef void (*constructor)();
 
 extern "C" constructor start_ctors;
@@ -59,11 +68,24 @@ extern "C" void CallConstructors() {
 
 extern "C" void KernelMain(const void *multiboot_structure, uint32_t magic) {
     Print("Hello World!\n");
-    GDT _gdt;
-    InterruptManager _interrupts(&_gdt);
 
-    KeyboardDriver keyboard(&_interrupts);
-    MouseDriver mouse(&_interrupts);
+    GDT _gdt;
+
+    InterruptManager _interrupts(&_gdt);
+    DriverManager _drivers;
+
+    Print("Initializing drivers...\n");
+
+    PrintKeyboardEventHandler _kb_handler;
+
+    KeyboardDriver keyboard(&_interrupts, &_kb_handler);
+    _drivers.AddDriver(&keyboard);
+
+    MouseEventHandler _mouse_handler;
+    MouseDriver mouse(&_interrupts, &_mouse_handler);
+    _drivers.AddDriver(&mouse);
+
+    _drivers.ActivateAll();
 
     _interrupts.Activate();
 
