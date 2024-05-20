@@ -2,29 +2,29 @@
 // Created by kamil on 05.11.23.
 //
 
-#include "keyboard.h"
+#include <drivers/io/keyboard.h>
 
 void Print(char *str);
 
-void PrintHex(uint8_t key);
+void PrintHex(cpp_os::common::uint8_t key);
 
-void PrintKeyboardEventHandler::OnKeyDown(char c) {
+void cpp_os::drivers::io::PrintKeyboardEventHandler::OnKeyDown(char c) {
     char *res = " ";
     res[0] = c;
     Print(res);
 }
 
-KeyboardDriver::KeyboardDriver(InterruptManager *IM, EventHandler *event_handler)
-: InterruptHandler(0x21,IM), data_port(0x60), command_port(0x64), event_handler(event_handler)
+cpp_os::drivers::io::KeyboardDriver::KeyboardDriver(cpp_os::hdcom::InterruptManager *IM, cpp_os::drivers::io::EventHandler *event_handler)
+: cpp_os::hdcom::InterruptHandler(0x21,IM), data_port(0x60), command_port(0x64), event_handler(event_handler)
 {
 
 }
 
-KeyboardDriver::~KeyboardDriver() {
+cpp_os::drivers::io::KeyboardDriver::~KeyboardDriver() {
 
 }
 
-void KeyboardDriver::Activate() {
+void cpp_os::drivers::io::KeyboardDriver::Activate() {
     //Wait if key is being pressed and erase previous key strikes
     while(command_port.Read() & 0x1)
         data_port.Read();
@@ -33,7 +33,7 @@ void KeyboardDriver::Activate() {
     //Get current state
     command_port.Write(0x20);
     //Read rightmost bit as new state
-    uint8_t status = (data_port.Read() | 1) & ~0x10;
+    cpp_os::common::uint8_t status = (data_port.Read() | 1) & ~0x10;
     //0x60 command to tell pic to change current state
     command_port.Write(0x60);
     data_port.Write(status);
@@ -43,8 +43,8 @@ void KeyboardDriver::Activate() {
 }
 
 
-uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp){
-    uint8_t key = data_port.Read();
+cpp_os::common::uint32_t cpp_os::drivers::io::KeyboardDriver::HandleInterrupt(cpp_os::common::uint32_t esp){
+    cpp_os::common::uint8_t key = data_port.Read();
     //Above 0x80 are key release codes
 
     if(key > 0x80)
@@ -106,4 +106,3 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp){
     }
     return esp;
 }
-

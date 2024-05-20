@@ -1,4 +1,6 @@
-#include "driver.h"
+#include <drivers/driver.h>
+
+using namespace cpp_os::drivers;
 
 int Driver::Reset() {
     return 0;

@@ -1,13 +1,15 @@
 //
 // Created by kamil on 21.10.23.
 //
-#include "types.h"
-#include "gdt.h"
-#include "port.h"
-#include "interrupts.h"
-#include "./drivers/io/keyboard.h"
-#include "./drivers/io/mouse.h"
-#include "./drivers/driver.h"
+#include <common/types.h>
+#include <gdt.h>
+#include <hdcom/port.h>
+#include <hdcom/interrupts.h>
+#include <drivers/io/keyboard.h>
+#include <drivers/io/mouse.h>
+#include <drivers/driver.h>
+
+
 
 extern "C" void __stack_chk_fail_local() {
     // Add your custom error handling here
@@ -18,9 +20,9 @@ extern "C" void __stack_chk_fail_local() {
 }
 
 void Print(char *str) {
-    static uint16_t *VideoMemory = (uint16_t *) 0xb8000;
+    static cpp_os::common::uint16_t *VideoMemory = (cpp_os::common::uint16_t *) 0xb8000;
 
-    static uint8_t x = 0, y = 0;
+    static cpp_os::common::uint8_t x = 0, y = 0;
 
     for (int i = 0; str[i] != '\0'; ++i) {
         switch(str[i]){
@@ -47,7 +49,7 @@ void Print(char *str) {
     }
 }
 
-void PrintHex(uint8_t key) {
+void PrintHex(cpp_os::common::uint8_t key) {
     char *res = "00";
     char *hex = "0123456789ABCDEF";
     res[0] = hex[(key >> 4) & 0x0F];
@@ -66,23 +68,23 @@ extern "C" void CallConstructors() {
         (*i)();
 }
 
-extern "C" void KernelMain(const void *multiboot_structure, uint32_t magic) {
+extern "C" void KernelMain(const void *multiboot_structure, cpp_os::common::uint32_t magic) {
     Print("Hello World!\n");
 
-    GDT _gdt;
+    cpp_os::GDT _gdt;
 
-    InterruptManager _interrupts(&_gdt);
-    DriverManager _drivers;
+    cpp_os::hdcom::InterruptManager _interrupts(&_gdt);
+    cpp_os::drivers::DriverManager _drivers;
 
     Print("Initializing drivers...\n");
 
-    PrintKeyboardEventHandler _kb_handler;
+    cpp_os::drivers::io::PrintKeyboardEventHandler _kb_handler;
 
-    KeyboardDriver keyboard(&_interrupts, &_kb_handler);
+    cpp_os::drivers::io::KeyboardDriver keyboard(&_interrupts, &_kb_handler);
     _drivers.AddDriver(&keyboard);
 
-    MouseEventHandler _mouse_handler;
-    MouseDriver mouse(&_interrupts, &_mouse_handler);
+    cpp_os::drivers::io::MouseEventHandler _mouse_handler;
+    cpp_os::drivers::io::MouseDriver mouse(&_interrupts, &_mouse_handler);
     _drivers.AddDriver(&mouse);
 
     _drivers.ActivateAll();

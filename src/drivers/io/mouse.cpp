@@ -2,7 +2,11 @@
 // Created by kamil on 05.11.23.
 //
 
-#include "mouse.h"
+#include <drivers/io/mouse.h>
+
+using namespace cpp_os::hdcom;
+using namespace cpp_os::common;
+using namespace cpp_os::drivers::io;
 
 void Print(char *str);
 

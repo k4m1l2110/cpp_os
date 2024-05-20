@@ -1,6 +1,9 @@
 
 
-#include "gdt.h"
+#include <gdt.h>
+
+using namespace cpp_os::common;
+using namespace cpp_os;
 
 GDT::GDT()
         : _null_segment_selector(0, 0, 0),

@@ -2,7 +2,9 @@
 // Created by bonzo22137 on 5/19/24.
 //
 
-#include "event_handler.h"
+#include <drivers/io/event_handler.h>
+
+using namespace cpp_os::drivers::io;
 
 EventHandler::EventHandler() {
     ;

@@ -3,10 +3,15 @@ CC = gcc
 AS = as
 LD = ld
 
-CFLAGS = -m32 -c -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings
+CFLAGS = -m32 -Iinclude -c -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings
 LDFLAGS = -melf_i386
 
-OBJS = loader.o gdt.o port.o interruptstubs.o interrupts.o ./drivers/io/keyboard.o ./drivers/io/mouse.o ./drivers/io/event_handler.o ./drivers/driver.o kernel.o
+# Find all .cpp and .s files in src/ and its subdirectories
+CPP_SOURCES = $(wildcard src/**/**/*.cpp src/**/*.cpp src/*.cpp)
+S_SOURCES = $(wildcard src/**/*.s src/*.s)
+
+# Generate the corresponding .o file names
+OBJS = $(patsubst src/%.cpp,obj/%.o,$(CPP_SOURCES)) $(patsubst src/%.s,obj/%.o,$(S_SOURCES))
 
 # Output files
 OUTPUT_DIR = iso/boot
@@ -24,10 +29,12 @@ $(ISO_IMAGE): $(KERNEL)
 $(KERNEL): $(OBJS)
 	ld $(LDFLAGS) -o $(KERNEL) $(OBJS) -T linker.ld
 
-%.o: %.cpp
+obj/%.o: src/%.cpp
+	mkdir -p $(@D)
 	$(CC) $(CFLAGS) $< -o $@
 
-%.o: %.s
+obj/%.o: src/%.s
+	mkdir -p $(@D)
 	as --32 -o $@ $<
 
 run: mykernel.iso
@@ -35,6 +42,6 @@ run: mykernel.iso
 	VirtualBoxVM --startvm 'cpp_os' &
 
 clean:
-	rm -Rf $(OBJS) $(KERNEL) $(ISO_IMAGE) iso
+	rm -Rf obj $(KERNEL) $(ISO_IMAGE) iso
 
 .PHONY: clean

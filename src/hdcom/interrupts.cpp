@@ -2,38 +2,38 @@
 // Created by kamil on 01.11.23.
 //
 
-#include "interrupts.h"
+#include <hdcom/interrupts.h>
 
 void Print(char *str);
-void PrintHex(uint8_t key);
+void PrintHex(cpp_os::common::uint8_t key);
 
-InterruptManager *InterruptManager::active_IM = 0;
-InterruptManager::GateDescriptor InterruptManager::IDT[256];
+cpp_os::hdcom::InterruptManager *cpp_os::hdcom::InterruptManager::active_IM = 0;
+cpp_os::hdcom::InterruptManager::GateDescriptor cpp_os::hdcom::InterruptManager::IDT[256];
 
-InterruptHandler::InterruptHandler(uint8_t interruptnr, InterruptManager *im)
+cpp_os::hdcom::InterruptHandler::InterruptHandler(cpp_os::common::uint8_t interruptnr, cpp_os::hdcom::InterruptManager *im)
         : interrupt_number(interruptnr), IM(im) {
     IM->handlers[interrupt_number] = this;
 
 }
 
-InterruptHandler::~InterruptHandler() {
+cpp_os::hdcom::InterruptHandler::~InterruptHandler() {
     if (IM->handlers[interrupt_number] == this)
         IM->handlers[interrupt_number] = 0;
 }
 
-uint32_t InterruptHandler::HandleInterrupt(uint32_t esp) {
+cpp_os::common::uint32_t cpp_os::hdcom::InterruptHandler::HandleInterrupt(cpp_os::common::uint32_t esp) {
     return esp;
 }
 
-InterruptManager::InterruptManager(GDT *gdt)
+cpp_os::hdcom::InterruptManager::InterruptManager(GDT *gdt)
         : pic_master_command(0x20), pic_master_data(0x21),
           pic_slave_command(0xA0), pic_slave_data(0xA1) {
 
 
-    uint16_t code_segment = gdt->CodeSegmentSelector();
-    const uint8_t IDT_INTERRUPT_GATE = 0xE;
+cpp_os::common::uint16_t code_segment = gdt->CodeSegmentSelector();
+    const cpp_os::common::uint8_t IDT_INTERRUPT_GATE = 0xE;
 
-    for (uint16_t i = 0; i < 256; i++) {
+    for (cpp_os::common::uint16_t i = 0; i < 256; i++) {
         handlers[i] = 0;
         SetIDT(i, code_segment, &IgnoreInterruptRequest, 0, IDT_INTERRUPT_GATE);
     }
@@ -59,27 +59,27 @@ InterruptManager::InterruptManager(GDT *gdt)
 
     IDT_PTR _idt;
     _idt.size = 256 * sizeof(GateDescriptor) - 1;
-    _idt.base = (uint32_t) IDT;
+    _idt.base = (cpp_os::common::uint32_t) IDT;
     asm volatile("lidt %0" : : "m"(_idt));
 
 }
 
-void InterruptManager::SetIDT(uint8_t interrupt_number,
-                              uint16_t code_segment_selector_offset,
+void cpp_os::hdcom::InterruptManager::SetIDT(cpp_os::common::uint8_t interrupt_number,
+                                             cpp_os::common::uint16_t code_segment_selector_offset,
                               void (*handler)(),
-                              uint8_t descriptor_privilage_level,
-                              uint8_t descriptor_type) {
+                              cpp_os::common::uint8_t descriptor_privilage_level,
+                              cpp_os::common::uint8_t descriptor_type) {
 
-    const uint8_t IDT_DESC_PRESENT = 0x80;
+    const cpp_os::common::uint8_t IDT_DESC_PRESENT = 0x80;
 
-    IDT[interrupt_number].handle_address_low_bits = ((uint32_t) handler) & 0xFFFF;
-    IDT[interrupt_number].handle_address_high_bits = ((uint32_t) handler >> 16) & 0xFFFF;
+    IDT[interrupt_number].handle_address_low_bits = ((cpp_os::common::uint32_t) handler) & 0xFFFF;
+    IDT[interrupt_number].handle_address_high_bits = ((cpp_os::common::uint32_t) handler >> 16) & 0xFFFF;
     IDT[interrupt_number].GDT_code_segment_selector = code_segment_selector_offset;
     IDT[interrupt_number].access = IDT_DESC_PRESENT | descriptor_type | ((descriptor_privilage_level & 3) << 5);
     IDT[interrupt_number].reserved = 0;
 }
 
-uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptnumber, uint32_t esp) {
+cpp_os::common::uint32_t cpp_os::hdcom::InterruptManager::DoHandleInterrupt(cpp_os::common::uint8_t interruptnumber, cpp_os::common::uint32_t esp) {
 
     if(handlers[interruptnumber]!= 0)
         esp = handlers[interruptnumber]->HandleInterrupt(esp);
@@ -96,13 +96,13 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptnumber, uint32_t e
     return esp;
 }
 
-uint32_t InterruptManager::HandleInterrupt(uint8_t interruptNumber, uint32_t esp) {
+cpp_os::common::uint32_t cpp_os::hdcom::InterruptManager::HandleInterrupt(cpp_os::common::uint8_t interruptNumber, cpp_os::common::uint32_t esp) {
     if (active_IM != nullptr)
         return active_IM->DoHandleInterrupt(interruptNumber, esp);
     return esp;
 }
 
-void InterruptManager::Activate() {
+void cpp_os::hdcom::InterruptManager::Activate() {
     if (active_IM != nullptr)
         active_IM->Deactivate();
     active_IM = this;
@@ -110,7 +110,7 @@ void InterruptManager::Activate() {
     Print("Activate\n");
 }
 
-void InterruptManager::Deactivate() {
+void cpp_os::hdcom::InterruptManager::Deactivate() {
     if (active_IM == this) {
         active_IM = nullptr;
         asm("cli");

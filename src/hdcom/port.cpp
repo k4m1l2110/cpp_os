@@ -2,7 +2,10 @@
 // Created by kamil on 01.11.23.
 //
 
-#include "port.h"
+#include <hdcom/port.h>
+
+using namespace cpp_os::hdcom;
+using namespace cpp_os::common;
 
 port::port(uint16_t portnumber)
 {
