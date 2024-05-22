@@ -3,7 +3,7 @@
 //
 #include <common/types.h>
 #include <gdt.h>
-#include <hdcom/port.h>
+#include <hdcom/pci.h>
 #include <hdcom/interrupts.h>
 #include <drivers/io/keyboard.h>
 #include <drivers/io/mouse.h>
@@ -71,9 +71,13 @@ extern "C" void CallConstructors() {
 extern "C" void KernelMain(const void *multiboot_structure, cpp_os::common::uint32_t magic) {
     Print("Hello World!\n");
 
+    //Create a Global Descriptor Table
     cpp_os::GDT _gdt;
 
+
+    //Create an Interrupt Manager
     cpp_os::hdcom::InterruptManager _interrupts(&_gdt);
+    //Select drivers
     cpp_os::drivers::DriverManager _drivers;
 
     Print("Initializing drivers...\n");
@@ -86,6 +90,10 @@ extern "C" void KernelMain(const void *multiboot_structure, cpp_os::common::uint
     cpp_os::drivers::io::MouseEventHandler _mouse_handler;
     cpp_os::drivers::io::MouseDriver mouse(&_interrupts, &_mouse_handler);
     _drivers.AddDriver(&mouse);
+
+    //Create a Peripheral Component Interconnect Controller
+    cpp_os::hdcom::PCIC _pci;
+    _pci.SelectDrivers(&_drivers, &_interrupts);
 
     _drivers.ActivateAll();
 
